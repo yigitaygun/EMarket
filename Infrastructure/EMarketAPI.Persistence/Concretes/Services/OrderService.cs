@@ -85,13 +85,9 @@ namespace EMarketAPI.Persistence.Concretes.Services
         }
 
 
-        public async Task<List<OrderDto>> GetAllOrdersAsync()   //orders tüm siparişler //order bir kişiye ait sipariş.
+        public async Task<List<OrderDto>> GetAllOrdersAsync()
         {
-            var orders=await _orderRepository
-                .GetAll()
-                .Include(o=>o.Items)
-                .ThenInclude(oi=>oi.Product)
-                .ToListAsync();
+            var orders = await _orderRepository.GetAllOrdersWithItemsAsync();
 
             var result = orders.Select(order => new OrderDto
             {
@@ -112,15 +108,34 @@ namespace EMarketAPI.Persistence.Concretes.Services
             return result;
         }
 
-        public async Task<List<OrderDto>> GetOrdersByUserIdAsync(string userId)
+        public async Task<OrderDto> GetOrderByIdAsync(int orderId) //atıyorum sipariş no 5 i getir.
         {
-            var userorders = await _orderRepository
-                .GetAll()
-                .Where(o => o.UserId == userId)
-                .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
-                .ToListAsync();
+            var order = await _orderRepository.GetOrderWithItemsAsync(orderId);
 
+            if (order == null)
+                return null;
+            return new OrderDto
+            {
+                Id = order.Id,
+                UserId = order.UserId,
+                OrderDate = order.CreatedDate,
+                Items = order.Items.Select(oi => new OrderItemDto {
+                    Id = oi.Id,
+                    ProductId = oi.ProductId,
+                    ProductName = oi.Product.Name,
+                    Quantity = oi.Quantity,
+                    Price = oi.UnitPrice
+
+                }).ToList(),
+                TotalPrice = order.Items.Sum(x => x.UnitPrice * x.Quantity)
+            };
+        }
+
+
+
+        public async Task<List<OrderDto>> GetOrdersByUserIdAsync(string userId)  //kullanıcı idsi 3 olanın siparişi getir.
+        {
+            var userorders = await _orderRepository.GetOrdersByUserIdAsync(userId);
             var donusum = userorders.Select(order => new OrderDto
             {
                 Id = order.Id,

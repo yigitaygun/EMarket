@@ -13,5 +13,6 @@ namespace EMarketAPI.Application.Abstractions.Services
         Task<ProductDto?> GetProductByIdAsync(int id);
         Task AddProductAsync(CreateProductDto newProduct);
         Task DeleteProductAsync(int id);
+        Task UpdateProductAsync(UpdateProductDto updatedto);
     }
 }

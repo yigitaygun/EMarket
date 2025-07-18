@@ -50,5 +50,20 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 await _unitOfWork.SaveChangesAsync();   
             }
         }
+
+        public async Task UpdateProductAsync(UpdateProductDto updatedto)
+        {
+            var product = await _productRepository.GetByIdAsync(updatedto.Id);
+            if (product != null)
+                throw new Exception("Ürün bulunamadı.");
+
+
+            product.Name= updatedto.Name;
+            product.Price= updatedto.Price;
+            product.Stock= updatedto.Stock;
+
+            _productRepository.Update(product);
+            await _unitOfWork.SaveChangesAsync();
+        }
     }
 }

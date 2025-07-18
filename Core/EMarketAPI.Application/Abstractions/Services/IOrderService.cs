@@ -12,5 +12,6 @@ namespace EMarketAPI.Application.Abstractions.Services
         Task CreateOrderAsync(CreateOrderDto createorderDtos);
         Task<List<OrderDto>> GetAllOrdersAsync();
         Task<List<OrderDto>> GetOrdersByUserIdAsync(string userId);
+        Task <OrderDto> GetOrderByIdAsync(int orderId);
     }
 }

@@ -12,6 +12,9 @@ namespace EMarketAPI.Application.Abstractions.Repositories
         Task<List<Order>> GetOrdersByUserIdAsync(string userId); // belirli bir kullanıcıya ait siparişleri getir
         Task<List<Order>> GetRecentOrdersAsync(int count); // en son verilen siparişleri getir
 
-        Task<Order?> GetOrderWithItemsAsync(int orderId); // siparişin içinde hangi ürünler var
+        Task<List<Order>> GetAllOrdersWithItemsAsync();  //Tüm siparişleri getir	
+        Task<Order?> GetOrderWithItemsAsync(int orderId); // siparişin içinde hangi ürünler var //Tek bir siparişi getirir orderidye göre
+
+
     }
 }
