@@ -9,7 +9,7 @@ namespace EMarketAPI.Application.Abstractions.Services
 {
     public interface IOrderService
     {
-        Task CreateOrderAsync(CreateOrderDto orderDto);
+        Task CreateOrderAsync(CreateOrderDto createorderDtos);
         Task<List<OrderDto>> GetAllOrdersAsync();
         Task<List<OrderDto>> GetOrdersByUserIdAsync(string userId);
     }

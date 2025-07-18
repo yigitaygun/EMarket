@@ -18,6 +18,11 @@ namespace EMarketAPI.Persistence.Concretes.UnitOfWork
             _context = context;
         }
 
+        public async Task<int> CommitAsync()
+        {
+            return await _context.SaveChangesAsync();
+        }
+
         public async Task<int> SaveChangesAsync()
         {
             return await _context.SaveChangesAsync();

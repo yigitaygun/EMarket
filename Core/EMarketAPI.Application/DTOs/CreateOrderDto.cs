@@ -10,6 +10,6 @@ namespace EMarketAPI.Application.DTOs
     public class CreateOrderDto
     {
         public string UserId { get; set; } = null!;
-        public List<CreateOrderItemDto> Items { get; set; } = new(); 
+        public List<CreateOrderItemDto> Items { get; set; } = new();
     }
 }

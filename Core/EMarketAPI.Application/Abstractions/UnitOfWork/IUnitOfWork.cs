@@ -10,5 +10,6 @@ namespace EMarketAPI.Application.Abstractions.UnitOfWork
     {
 
         Task<int> SaveChangesAsync();
+        Task<int> CommitAsync();
     }
 }

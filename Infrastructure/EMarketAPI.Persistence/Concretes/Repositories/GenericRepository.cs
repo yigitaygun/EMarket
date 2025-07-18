@@ -28,6 +28,11 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         public void Delete(T entity)
             =>_dbSet.Remove(entity);
 
+        public IQueryable<T> GetAll()
+        {
+            return _dbSet.AsQueryable();
+        }
+
         public async Task<List<T>> GetAllAsync()
             =>await _dbSet.ToListAsync();
 
