@@ -3,6 +3,9 @@ using EMarketAPI.Persistence.Context;
 using EMarketAPI.Application.Mappings;
 using EMarketAPI.Application.Abstractions.UnitOfWork;
 using EMarketAPI.Persistence.Concretes.UnitOfWork;
+using EMarketAPI.Persistence;
+using EMarketAPI.Persistence.Identity;
+using Microsoft.AspNetCore.Identity;
 
 
 
@@ -16,9 +19,23 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
+
+
+
+
+
+
+
+
+
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));           //veritabaný baðlantýsý.
+
+builder.Services.AddPersistenceServices();
 
 
 

@@ -10,8 +10,6 @@ namespace EMarketAPI.Domain.Entities
     {
         public int Id { get; set; }
         public string UserId { get; set; } = null!;
-        public AppUser User { get; set; } = null!;
-
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 
