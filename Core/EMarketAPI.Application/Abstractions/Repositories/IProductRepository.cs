@@ -12,5 +12,6 @@ namespace EMarketAPI.Application.Abstractions.Repositories
         Task<List<Product>> GetProductsByCategoryAsync(string category); //belirli bir kategoriye ait ürünleri döner.
         Task<List<Product>> GetProductsInStockAsync();  //stokta olan ürünleri getir.
         Task<List<Product>> GetTopSellingProductsAsync(int count); //en çok satılan ürünleri getirir.
+        Task<List<Product>> GetActiveProductsAsync(); // soft-deleted olmayanlar
     }
 }

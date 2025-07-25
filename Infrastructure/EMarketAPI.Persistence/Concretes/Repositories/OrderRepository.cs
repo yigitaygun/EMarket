@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -18,8 +18,8 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         public async Task<List<Order>> GetAllOrdersWithItemsAsync()
         {
             return await _dbSet
+                .Where(o => !o.IsDeleted)
                 .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -29,9 +29,8 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         public async Task<List<Order>> GetOrdersByUserIdAsync(string userId)
         {
             return await _dbSet
-                .Where(o => o.UserId == userId)
+                .Where(o => o.UserId == userId && !o.IsDeleted)
                 .Include(o => o.Items)
-                .ThenInclude(i => i.Product)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -42,9 +41,8 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         {
             return await _dbSet
                 .Include(o=>o.Items)
-                .ThenInclude(i=>i.Product)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(o=>o.Id==orderId);
+                .FirstOrDefaultAsync(o => o.Id == orderId && !o.IsDeleted);
         }
 
         // En son oluşturulan n adet siparişi getir
@@ -52,9 +50,22 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         {
 
             return await _dbSet
-                .OrderByDescending(o=>o.CreatedDate)
+                .Where(o => !o.IsDeleted)
+                .Include(o => o.Items)
+                .OrderByDescending(o => o.CreatedDate)
                 .Take(count)
+                .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task SoftDeleteAsync(int orderId)
+        {
+            var order=await _dbSet.FirstOrDefaultAsync(o=>o.Id==orderId);
+            if (order != null)
+                return;
+
+            order.IsDeleted=true;
+            _dbSet.Update(order);
         }
     }
 }

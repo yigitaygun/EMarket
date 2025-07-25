@@ -11,6 +11,7 @@ namespace EMarketAPI.Persistence.Identity
     public class AppUser : IdentityUser
     {
         public string Role { get; set; } = "Customer";
+        public bool IsDeleted { get; set; } = false;
         public ICollection<Order>? Orders { get; set; }
     }
 }

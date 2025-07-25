@@ -13,7 +13,11 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
     public class ProductRepository:GenericRepository<Product>,IProductRepository
     {
         public ProductRepository(AppDbContext context) : base(context) { }
-        
+
+        public async Task<List<Product>> GetActiveProductsAsync()
+        {
+            return await _dbSet.Where(p=>!p.IsDeleted).ToListAsync();
+        }
 
         public async Task<List<Product>> GetProductsByCategoryAsync(string category)
         {

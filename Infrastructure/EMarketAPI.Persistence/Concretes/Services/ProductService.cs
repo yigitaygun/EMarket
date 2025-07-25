@@ -24,7 +24,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
 
         public async Task<List<ProductDto>> GetAllProductsAsync()
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = await _productRepository.GetActiveProductsAsync();
             return _mapper.Map<List<ProductDto>>(products);
         }
 
@@ -41,14 +41,15 @@ namespace EMarketAPI.Persistence.Concretes.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task DeleteProductAsync(int id)
+        public async Task DeleteProductAsync(int productId)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product != null)
-            {
-                _productRepository.Delete(product);
-                await _unitOfWork.SaveChangesAsync();   
-            }
+            var product = await _productRepository.GetByIdAsync(productId);
+            if (product == null)
+                throw new Exception("Ürün bulunamadı");
+
+            product.IsDeleted = true;
+            _productRepository.Update(product);
+            await _unitOfWork.CommitAsync();
         }
 
         public async Task UpdateProductAsync(UpdateProductDto updatedto)

@@ -2,11 +2,14 @@
 using System.Threading.Tasks;
 using EMarketAPI.Application.Abstractions.Services;
 using EMarketAPI.Application.DTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EMarketAPI.API.Controllers
 {
+
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class OrderController : ControllerBase
@@ -22,7 +25,7 @@ namespace EMarketAPI.API.Controllers
         [HttpGet]
         public async Task <IActionResult> GetAll()
         {
-            var orders=_orderService.GetAllOrdersAsync();
+            var orders= await _orderService.GetAllOrdersAsync();
             return Ok(orders);
         }
 
@@ -31,7 +34,7 @@ namespace EMarketAPI.API.Controllers
         [HttpGet("user/{userId}")]
         public async Task <IActionResult> GetByUserId(string userId)
         {
-            var orders=_orderService.GetOrdersByUserIdAsync(userId);
+            var orders= await _orderService.GetOrdersByUserIdAsync(userId);
             return Ok(orders);
         }
 
@@ -58,8 +61,26 @@ namespace EMarketAPI.API.Controllers
             return Ok();
         }
 
+        [HttpGet("my-orders")]
+        [Authorize]
+        public async Task <IActionResult> GetMyOrders()
+        {
+            var userId=User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized();
 
+            var orders = await _orderService.GetOrdersByUserIdAsync(userId);
+            return Ok(orders);
+        }
 
+        [HttpDelete("{id}")]
+        [Authorize]
+
+        public async Task <IActionResult> DeleteOrder(int id)
+        {
+            await _orderService.DeleteOrderAsync(id);
+            return NoContent();
+        }
 
 
 

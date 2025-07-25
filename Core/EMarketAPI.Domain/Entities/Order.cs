@@ -13,5 +13,7 @@ namespace EMarketAPI.Domain.Entities
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public ICollection<OrderItem> Items { get; set; } = new List<OrderItem>();
 
+        public bool IsDeleted { get; set; } = false;
+
     }
 }

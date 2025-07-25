@@ -65,6 +65,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 var orderItem = new OrderItem()
                 {
                     ProductId=product.Id, // Hangi ürün sipariş edildi
+                    ProductName = product.Name,
                     Quantity =item.Quantity, // Kaç adet alındı
                     UnitPrice =product.Price // O anki birim fiyat  
                 };
@@ -74,6 +75,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
 
                 // Ürünün stok bilgisini güncelliyoruz
                 product.Stock-=item.Quantity;
+                product.SoldCount += item.Quantity;
 
                 // Ürünü güncelle (stok düşmüş halde veritabanına yazılacak)
                 _productRepository.Update(product);
@@ -84,6 +86,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 await _unitOfWork.CommitAsync();   //Tek seferde tüm değişiklikleri veritabanına işle
         }
 
+        
 
         public async Task<List<OrderDto>> GetAllOrdersAsync()
         {
@@ -98,7 +101,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 {
                     Id = oi.Id,
                     ProductId = oi.ProductId,
-                    ProductName = oi.Product.Name,
+                    ProductName = oi.ProductName,
                     Quantity = oi.Quantity, 
                     Price = oi.UnitPrice
                 }).ToList(),
@@ -122,7 +125,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 Items = order.Items.Select(oi => new OrderItemDto {
                     Id = oi.Id,
                     ProductId = oi.ProductId,
-                    ProductName = oi.Product.Name,
+                    ProductName = oi.ProductName,
                     Quantity = oi.Quantity,
                     Price = oi.UnitPrice
 
@@ -145,7 +148,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 {
                     Id = i.Id,
                     ProductId = i.ProductId,
-                    ProductName = i.Product.Name,
+                    ProductName = i.ProductName,
                     Quantity = i.Quantity,
                     Price = i.UnitPrice
                 }).ToList(),
@@ -155,6 +158,16 @@ namespace EMarketAPI.Persistence.Concretes.Services
 
             return donusum;
         }
+
+        public async Task DeleteOrderAsync(int orderId)
+        {
+            await _orderRepository.SoftDeleteAsync(orderId);
+            await _unitOfWork.CommitAsync();
+        }
+
+
+
+
 
     }
 }

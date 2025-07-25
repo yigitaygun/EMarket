@@ -16,5 +16,6 @@ namespace EMarketAPI.Domain.Entities
         public int Stock { get; set; }
         public string? ImageUrl { get; set; }
         public int SoldCount { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

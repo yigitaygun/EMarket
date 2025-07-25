@@ -30,10 +30,7 @@ namespace EMarketAPI.Persistence.Context
                 .WithOne(i => i.Order)
                 .HasForeignKey(i => i.OrderId);
 
-            modelBuilder.Entity<OrderItem>()
-                .HasOne(i => i.Product)
-                .WithMany()
-                .HasForeignKey(i => i.ProductId);
+            
         }
 
 
