@@ -61,7 +61,7 @@ namespace EMarketAPI.Persistence.Concretes.Repositories
         public async Task SoftDeleteAsync(int orderId)
         {
             var order=await _dbSet.FirstOrDefaultAsync(o=>o.Id==orderId);
-            if (order != null)
+            if (order == null)
                 return;
 
             order.IsDeleted=true;

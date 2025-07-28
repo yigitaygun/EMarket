@@ -11,6 +11,9 @@ using EMarketAPI.Persistence.Seeders;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using FluentValidation.AspNetCore;
+using EMarketAPI.Application.Validators.User;
+using FluentValidation;
 
 
 
@@ -68,7 +71,8 @@ builder.Services.AddPersistenceServices();
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 
 builder.Services.AddAuthentication(options =>
 {

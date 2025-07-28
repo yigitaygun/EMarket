@@ -75,7 +75,7 @@ namespace EMarketAPI.API.Controllers
 
         // Soft-delete edilmiş kullanıcıyı geri getir
         [HttpPost("restore/{id}")]
-        [Authorize(Roles = "Admin")]
+        
         public async Task<IActionResult> RestoreUser(string id)
         {
             var ok = await _authService.RestoreUserByIdAsync(id);

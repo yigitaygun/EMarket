@@ -141,7 +141,7 @@ namespace EMarketAPI.Persistence.Concretes.Services
         public async Task<bool> RestoreUserByIdAsync(string userId)  //Yanlışlıkla silinen kullanıcıyı geri getir (IsDeleted = false).
         {
             var user= await _userManager.FindByIdAsync(userId);
-            if (user == null || user.IsDeleted)
+            if (user == null || !user.IsDeleted)
                 return false;
 
             user.IsDeleted = false;
