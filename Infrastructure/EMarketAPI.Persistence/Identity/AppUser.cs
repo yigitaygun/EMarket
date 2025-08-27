@@ -1,4 +1,4 @@
-﻿using System;
+﻿    using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +13,10 @@ namespace EMarketAPI.Persistence.Identity
         public string Role { get; set; } = "Customer";
         public bool IsDeleted { get; set; } = false;
         public ICollection<Order>? Orders { get; set; }
+
+        public decimal Balance { get; set; }
+
+
+
     }
 }

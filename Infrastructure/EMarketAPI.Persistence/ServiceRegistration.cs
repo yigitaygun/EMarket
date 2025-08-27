@@ -23,6 +23,7 @@ namespace EMarketAPI.Persistence
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IWalletService, WalletService>();
         }
 
 

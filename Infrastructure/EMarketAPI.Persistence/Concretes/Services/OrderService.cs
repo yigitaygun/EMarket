@@ -12,6 +12,9 @@ using EMarketAPI.Application.DTOs;
 using EMarketAPI.Domain.Entities;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore;
+using EMarketAPI.Persistence.Identity;
+using Microsoft.AspNetCore.Identity;
+using EMarketAPI.Persistence.Context;
 
 namespace EMarketAPI.Persistence.Concretes.Services
 {
@@ -23,70 +26,24 @@ namespace EMarketAPI.Persistence.Concretes.Services
         private readonly IMapper _mapper;
         private readonly IProductRepository _productRepository;
 
+        private readonly UserManager<AppUser> _userManager;
+        private readonly AppDbContext _ctx;
 
-        public OrderService(IOrderRepository orderRepository, IUnitOfWork unitOfWork, IMapper mapper, IProductRepository productRepository)
+        public OrderService(IOrderRepository orderRepository, IUnitOfWork unitOfWork, IMapper mapper, IProductRepository productRepository,UserManager<AppUser> userManager,AppDbContext ctx)
+
+
         {
             _orderRepository = orderRepository;
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _productRepository = productRepository;
-        }
-            
-        public async Task CreateOrderAsync(CreateOrderDto createorderDtos) // Swagger'dan gelen sipariş verisini alır
-        {
-
-
-            // Yeni bir Order (sipariş) nesnesi oluşturuyoruz
-            var order = new Order()    
-            {
-                UserId = createorderDtos.UserId, // Siparişi veren kullanıcının ID'si
-                CreatedDate = DateTime.UtcNow,   // Sipariş tarihi (şu anki zaman)
-                Items = new List<OrderItem>()   // Siparişin ürünlerini (OrderItem) tutacak liste
-            };
-
-            // Kullanıcının sipariş etmek istediği her ürün için dönüyoruz
-            foreach (var item in createorderDtos.Items)
-            {
-                // Veritabanından ürün ID'sine göre ürünü çekiyoruz
-                var product =await _productRepository.GetByIdAsync(item.ProductId);
-
-
-                if (product == null)
-                {
-                    throw new Exception($"Ürün bulunamadı: {item.ProductId}");
-                }
-
-                if (product.Stock < item.Quantity)
-                {
-                    throw new Exception($"Stok yetersiz: {product.Name}");
-                }
-
-                // Ürün bilgileriyle bir OrderItem (sipariş detayı) oluşturuyoruz
-                var orderItem = new OrderItem()
-                {
-                    ProductId=product.Id, // Hangi ürün sipariş edildi
-                    ProductName = product.Name,
-                    Quantity =item.Quantity, // Kaç adet alındı
-                    UnitPrice =product.Price // O anki birim fiyat  
-                };
-
-                // Siparişe bu ürünü ekliyoruz
-                order.Items.Add(orderItem);
-
-                // Ürünün stok bilgisini güncelliyoruz
-                product.Stock-=item.Quantity;
-                product.SoldCount += item.Quantity;
-
-                // Ürünü güncelle (stok düşmüş halde veritabanına yazılacak)
-                _productRepository.Update(product);
-                }
-
-                await _orderRepository.AddAsync(order); //Döngüden sonra tek seferde siparişi ekle
-
-                await _unitOfWork.CommitAsync();   //Tek seferde tüm değişiklikleri veritabanına işle
+            _userManager = userManager;
+            _ctx = ctx;
         }
 
         
+
+
 
         public async Task<List<OrderDto>> GetAllOrdersAsync()
         {
@@ -165,9 +122,62 @@ namespace EMarketAPI.Persistence.Concretes.Services
             await _unitOfWork.CommitAsync();
         }
 
+        public async Task<int> CreateOrderAsync(string userId, CreateOrderDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+                throw new UnauthorizedAccessException("Kullanıcı kimliği bulunamadı.");
+            if (dto.Items == null || dto.Items.Count == 0)
+                throw new InvalidOperationException("En az bir ürün seçilmelidir.");
+
+            using var tx=await _ctx.Database.BeginTransactionAsync();
+            var order = new Order
+            {
+                UserId = userId,
+                CreatedDate = DateTime.UtcNow,
+                Items = new List<OrderItem>()
+            };
+
+            foreach (var item in dto.Items)
+            {
+                var product = await _productRepository.GetByIdAsync(item.ProductId)
+                              ?? throw new KeyNotFoundException($"Ürün bulunamadı: {item.ProductId}");
+
+                if (product.Stock < item.Quantity)
+                    throw new InvalidOperationException($"Stok yetersiz: {product.Name}");
+
+                order.Items.Add(new OrderItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Quantity = item.Quantity,
+                    UnitPrice = product.Price
+                });
+
+                product.Stock -= item.Quantity;
+                product.SoldCount += item.Quantity;
+                _productRepository.Update(product);
+            }
+
+            var total=order.Items.Sum(i=>i.Quantity*i.UnitPrice);
+
+            var user=await _ctx.Users.FirstAsync(u=>u.Id==userId);
+            if (user.Balance < total)
+                throw new InvalidOperationException("INSUFFICIENT_FUNDS");
+
+            user.Balance-=total;
+
+            _ctx.Users.Update(user);
+            
+
+            await _orderRepository.AddAsync(order);
+            await _unitOfWork.CommitAsync();
+
+            await tx.CommitAsync();
+            return order.Id;
 
 
 
 
+        }
     }
 }

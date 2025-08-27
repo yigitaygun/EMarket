@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,6 +15,7 @@ namespace EMarketAPI.Application.DTOs.User
         public string Email { get; set; } = null!;
         public bool IsDeleted { get; set; }
         public IEnumerable<string> Roles { get; set; } = Enumerable.Empty<string>();
+        public decimal Balance { get; set; }
     }
 
     public class UserDetailDto : UserSummaryDto

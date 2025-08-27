@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace EMarketAPI.Application.DTOs
 {
-    public class CreateOrderDto
+    public class ForgotPasswordRequest
     {
-     public List<CreateOrderItemDto> Items { get; set; } = new();
+        public string Email { get; set; }
     }
 }

@@ -12,9 +12,6 @@ namespace EMarketAPI.Application.Validators.Order
     {
         public CreateOrderDtoValidator()
         {
-            RuleFor(x => x.UserId)
-                .NotEmpty().WithMessage("Kullanıcı ID boş olamaz.");
-
             RuleFor(x => x.Items)
                 .NotEmpty().WithMessage("Sipariş en az bir ürün içermelidir.");
 

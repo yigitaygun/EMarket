@@ -30,8 +30,18 @@ namespace EMarketAPI.Persistence.Context
                 .WithOne(i => i.Order)
                 .HasForeignKey(i => i.OrderId);
 
-            
+            modelBuilder.Entity<AppUser>(e =>
+            {
+                e.Property(u => u.Balance)
+                .HasColumnType("numeric(18,2)")
+                .HasDefaultValue(0);
+
+
+
+            });
         }
+
+
 
 
 

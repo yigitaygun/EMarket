@@ -1,4 +1,5 @@
 ﻿using System.Formats.Asn1;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using EMarketAPI.Application.Abstractions.Services;
 using EMarketAPI.Application.DTOs;
@@ -23,6 +24,7 @@ namespace EMarketAPI.API.Controllers
 
         // GET: api/orders
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task <IActionResult> GetAll()
         {
             var orders= await _orderService.GetAllOrdersAsync();
@@ -32,6 +34,7 @@ namespace EMarketAPI.API.Controllers
 
         // GET: api/orders/user/{userId}
         [HttpGet("user/{userId}")]
+        [Authorize(Roles = "Admin")]
         public async Task <IActionResult> GetByUserId(string userId)
         {
             var orders= await _orderService.GetOrdersByUserIdAsync(userId);
@@ -40,7 +43,8 @@ namespace EMarketAPI.API.Controllers
 
         // GET: api/orders/{id}
         [HttpGet("{id}")]
-        
+
+
         public async Task<IActionResult> GetById(int id)
         {
             var order= await _orderService.GetOrderByIdAsync(id);
@@ -55,10 +59,34 @@ namespace EMarketAPI.API.Controllers
         // POST: api/orders
         [HttpPost]
 
-        public async Task<IActionResult> Create(CreateOrderDto createOrderDto)
+
+        public async Task<IActionResult> Create([FromBody] CreateOrderDto dto)
         {
-            await _orderService.CreateOrderAsync(createOrderDto);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            // token'dan userId (ClaimTypes.NameIdentifier / sub / uid)
+            var userId =
+                User.FindFirstValue(ClaimTypes.NameIdentifier) ??
+                User.FindFirst("sub")?.Value ??
+                User.FindFirst("uid")?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
+
+            try
+            {
+                var orderId = await _orderService.CreateOrderAsync(userId, dto);
+                return Ok(new { orderId });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message); // ürün bulunamadı vb.
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message); // stok yetersiz vb.
+            }
         }
 
         [HttpGet("my-orders")]

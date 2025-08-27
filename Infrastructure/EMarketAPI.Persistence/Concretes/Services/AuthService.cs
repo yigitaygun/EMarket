@@ -19,12 +19,14 @@ namespace EMarketAPI.Persistence.Concretes.Services
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly IMailService _mailService;
 
-        public AuthService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenService tokenService)
+        public AuthService(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, ITokenService tokenService,IMailService mailService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _mailService = mailService;
         }
 
         
@@ -110,7 +112,8 @@ namespace EMarketAPI.Persistence.Concretes.Services
                     Id = u.Id,
                     UserName = u.UserName ?? string.Empty,
                     Email = u.Email ?? string.Empty,
-                    IsDeleted = u.IsDeleted
+                    IsDeleted = u.IsDeleted,
+                    Balance = u.Balance,
                 })
                 .ToListAsync();
         }
@@ -132,7 +135,8 @@ namespace EMarketAPI.Persistence.Concretes.Services
                 UserName=u.UserName!,
                 Email=u.Email!,
                 IsDeleted=u.IsDeleted,
-                Roles=roles
+                Roles=roles,
+                Balance=u.Balance,
                 
 
             };   
@@ -147,6 +151,35 @@ namespace EMarketAPI.Persistence.Concretes.Services
             user.IsDeleted = false;
             var result=await _userManager.UpdateAsync(user);
             return result.Succeeded;
+        }
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                return; // güvenlik sebebiyle e-posta varsa da yoksa da aynı davran
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedToken = Uri.EscapeDataString(token);
+            var link = $"https://localhost:3000/reset-password?email={email}&token={encodedToken}";
+
+            var body = $"<p>Şifreni sıfırlamak için <a href=\"{link}\">buraya tıkla</a>.</p>";
+
+            await _mailService.SendAsync(email, "Şifre Sıfırlama", body);
+        }
+
+        public async Task ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null)
+                throw new Exception("Kullanıcı bulunamadı");
+
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                throw new Exception(errors);
+            }
         }
     }
 }
